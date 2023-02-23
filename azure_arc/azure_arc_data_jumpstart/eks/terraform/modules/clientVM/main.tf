@@ -158,7 +158,8 @@ resource "aws_security_group" "allow_rdp_winrm" {
     protocol    = "tcp"
     cidr_blocks = [
 
-      "0.0.0.0/0"
+      "24.160.150.113/32",
+      "24.160.150.113/32"
 
     ]
   }
@@ -168,8 +169,9 @@ resource "aws_security_group" "allow_rdp_winrm" {
     protocol    = "tcp"
     cidr_blocks = [
 
-      "0.0.0.0/0"    
-
+      "24.160.150.113/32",
+      "24.160.150.113/32"
+      
     ]
   }
   // Terraform removes the default rule

@@ -6,8 +6,16 @@ $connectedClusterName = "Arc-DataServices-EKS"
 
 Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled False
 
+
+az login --use-device-code --tenant mswsdemo04.onmicrosoft.com
+# URL https://microsoft.com/devicelogin
+aws eks --region us-west-2 update-kubeconfig --name $connectedClusterName
+kubectl get ns
+kubectl apply -f C:\Temp\create-sa.yaml
+kubectl apply -f C:\Temp\grant-role.yaml
+
 # Login as service principal
-az login --service-principal --username $Env:spnClientId --password $Env:spnClientSecret --tenant $Env:spnTenantId
+#az login --service-principal --username $Env:spnClientId --password $Env:spnClientSecret --tenant $Env:spnTenantId
 
 # Making extension install dynamic
 az config set extension.use_dynamic_install=yes_without_prompt
@@ -91,6 +99,8 @@ Write-Host "`n"
 # Localize kubeconfig
 $Env:KUBECONTEXT = kubectl config current-context
 $Env:KUBECONFIG = "C:\Users\$Env:adminUsername\.kube\config"
+echo $Env:KUBECONTEXT
+echo $Env:KUBECONFIG
 
 Start-Sleep -Seconds 10
 
@@ -105,6 +115,8 @@ az connectedk8s connect --name $connectedClusterName `
 
 Start-Sleep -Seconds 10
 
+echo $Env:customLocationObjectId
+
 #Enable custom location feature
 Write-Host "`n"
 Write-Host "Enabling Custom Location feature on the connected cluster"
@@ -113,11 +125,20 @@ Write-Host "`n"
 
 start-sleep -seconds 20
 
+echo $Env:workspaceName
+
 # Enabling Container Insights and Microsoft Defender for Containers cluster extensions
 Write-Host "`n"
 Write-Host "Enabling Container Insights cluster extensions"
 az k8s-extension create --name "azuremonitor-containers" --cluster-name $connectedClusterName --resource-group $Env:resourceGroup --cluster-type connectedClusters --extension-type Microsoft.AzureMonitor.Containers --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceId
 Write-Host "`n"
+
+$workspaceId = $(az resource show --resource-group $Env:resourceGroup --name $Env:workspaceName --resource-type "Microsoft.OperationalInsights/workspaces" --query id -o tsv)
+$workspaceKey = $(az monitor log-analytics workspace get-shared-keys --resource-group $Env:resourceGroup --workspace-name $Env:workspaceName --query primarySharedKey -o tsv)
+
+
+echo $workspaceId
+echo $workspaceKey
 
 # Monitor pods across arc namespace
 $kubectlMonShell = Start-Process -PassThru PowerShell {for (0 -lt 1) {kubectl get pod -n arc; Start-Sleep -Seconds 5; Clear-Host }}
@@ -152,6 +173,9 @@ $extensionId = az k8s-extension show --name arc-data-services `
                                      --resource-group $Env:resourceGroup `
                                      --query id -o tsv
 
+echo $connectedClusterId
+echo $extensionId
+
 Start-Sleep -Seconds 20
 
 # Create Custom Location 
@@ -164,7 +188,7 @@ az customlocation create --name 'aws-dsvcs-cl01' `
 # Creating Log Analytics Workspace for Metric Upload
 Write-Host "Deploying Log Analytics Workspace"
 Write-Host "`n"
-az monitor log-analytics workspace create --resource-group $env:resourceGroup --workspace-name $Env:workspaceName
+#az monitor log-analytics workspace create --resource-group $env:resourceGroup --workspace-name $Env:workspaceName
 
 Start-Sleep -Seconds 10
 
@@ -176,6 +200,10 @@ Write-Host "`n"
 $customLocationId = $(az customlocation show --name "aws-dsvcs-cl01" --resource-group $Env:resourceGroup --query id -o tsv)
 $workspaceId = $(az resource show --resource-group $Env:resourceGroup --name $Env:workspaceName --resource-type "Microsoft.OperationalInsights/workspaces" --query properties.customerId -o tsv)
 $workspaceKey = $(az monitor log-analytics workspace get-shared-keys --resource-group $Env:resourceGroup --workspace-name $Env:workspaceName --query primarySharedKey -o tsv)
+
+echo $customLocationId
+echo $workspaceId
+echo $workspaceKey
 
 $dataControllerParams = "$Env:TempDir\dataController.parameters.json"
 
@@ -193,6 +221,17 @@ $dataControllerParams = "$Env:TempDir\dataController.parameters.json"
 az deployment group create --resource-group $Env:resourceGroup `
                            --template-file "$Env:TempDir\dataController.json" `
                            --parameters "$Env:TempDir\dataController.parameters.json"
+
+
+kubectl get datacontroller -n arc
+kubectl get deployments,pods -n arc
+
+#az customlocation delete --name 'aws-ds-cl01' --resource-group $resourceGroup
+$datacontrollerName="arc-datasvc-aws-dc01"
+az arcdata dc list --resource-group $Env:resourceGroup 
+az arcdata dc delete --name $datacontrollerName --resource-group $Env:resourceGroup 
+
+
 
 Write-Host "`n"
 Do {
