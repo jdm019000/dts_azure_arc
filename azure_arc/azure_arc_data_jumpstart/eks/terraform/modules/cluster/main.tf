@@ -63,7 +63,7 @@ resource "aws_security_group_rule" "arcdemo-cluster-ingress-workstation-https" {
 
 resource "aws_eks_cluster" "arcdemo" {
   name     = var.cluster_name
-  version         = "1.22" 
+  version         = "1.23" 
   role_arn = aws_iam_role.arcdemo-cluster.arn
 
   vpc_config {
