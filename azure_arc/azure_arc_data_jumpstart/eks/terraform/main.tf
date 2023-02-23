@@ -128,7 +128,7 @@ data "aws_availability_zones" "available" {}
 # Override with variable or hardcoded value if necessary
 locals {
   workstation_cidr = "${chomp(data.http.workstation_ip.body)}/32"
-   template_base_url = "https://raw.githubusercontent.com/${var.github_repo}/dts_azure_arc/${var.github_branch}/azure_arc_data_jumpstart/eks/terraform/"
+   template_base_url = "https://raw.githubusercontent.com/${var.github_repo}/dts_azure_arc/${var.github_branch}/azure_arc/azure_arc_data_jumpstart/eks/terraform/"
 }
 
 resource "aws_vpc" "arcdemo" {
