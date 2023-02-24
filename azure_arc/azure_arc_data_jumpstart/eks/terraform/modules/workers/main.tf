@@ -38,6 +38,12 @@ resource "aws_iam_role_policy_attachment" "arcdemo-node-AmazonEC2ContainerRegist
   role       = aws_iam_role.arcdemo-node.name
 }
 
+resource "aws_iam_role_policy_attachment" "arcdemo-node-AmazonSSMRoleForInstancesMDCSetup" {
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMRoleForInstancesMDCSetup"
+  role       = aws_iam_role.arcdemo-node.name
+}
+
+
 resource "aws_eks_node_group" "arcdemo" {
   cluster_name    = var.cluster_name
   node_group_name = "arcdemo"
@@ -56,5 +62,6 @@ resource "aws_eks_node_group" "arcdemo" {
     aws_iam_role_policy_attachment.arcdemo-node-AmazonEKSWorkerNodePolicy,
     aws_iam_role_policy_attachment.arcdemo-node-AmazonEKS_CNI_Policy,
     aws_iam_role_policy_attachment.arcdemo-node-AmazonEC2ContainerRegistryReadOnly,
+    aws_iam_role_policy_attachment.arcdemo-node-AmazonSSMRoleForInstancesMDCSetup,
   ]
 }

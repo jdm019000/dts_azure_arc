@@ -35,6 +35,7 @@ az -v
 # subscription user deployed ARM template to. This is needed in case Service 
 # Principal has access to multiple subscriptions, which can break the automation logic
 az account set --subscription $Env:subscriptionId
+az account show --query id --output tsv
 
 # Installing Azure Data Studio extensions
 Write-Host "`n"
@@ -84,7 +85,7 @@ az -v
 # Get EKS cluster token
 Write-Host "Getting EKS cluster token"
 Write-Host "`n"
-aws eks update-kubeconfig --region $env:AWS_DEFAULT_REGION --name $connectedClusterName
+#aws eks update-kubeconfig --region $env:AWS_DEFAULT_REGION --name $connectedClusterName
 Write-Host "`n"
 
 Write-Host "Checking kubernetes nodes"

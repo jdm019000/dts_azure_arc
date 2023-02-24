@@ -192,7 +192,7 @@ resource "aws_subnet" "subnet1" {
 }
 
 data "aws_ami" "Windows_2022" {
-  most_recent = true
+  #most_recent = true
   filter {
     name   = "name"
     values = ["Windows_Server-2022-English-Full-Base-*"]
@@ -205,7 +205,8 @@ data "aws_ami" "Windows_2022" {
 }
 
 resource "aws_instance" "windows" {
-  ami                         = data.aws_ami.Windows_2022.image_id
+  #ami                         = data.aws_ami.Windows_2022.image_id
+  ami                                  = "ami-039965e18092d85cb"
   instance_type               = var.windows_instance_types
   key_name                    = var.key_name
   vpc_security_group_ids      = [aws_security_group.allow_rdp_winrm.id]
