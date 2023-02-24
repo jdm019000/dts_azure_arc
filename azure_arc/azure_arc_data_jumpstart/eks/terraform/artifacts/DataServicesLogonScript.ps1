@@ -125,13 +125,24 @@ Write-Host "`n"
 
 start-sleep -seconds 20
 
+# Creating Log Analytics Workspace for Metric Upload
+Write-Host "Deploying Log Analytics Workspace"
+Write-Host "`n"
+az monitor log-analytics workspace create --resource-group $env:resourceGroup --workspace-name $Env:workspaceName
+$workspaceId = $(az resource show --resource-group $Env:resourceGroup --name $Env:workspaceName --resource-type "Microsoft.OperationalInsights/workspaces" --query id -o tsv)
+
 echo $Env:workspaceName
+echo $workspaceId
 
 # Enabling Container Insights and Microsoft Defender for Containers cluster extensions
 Write-Host "`n"
 Write-Host "Enabling Container Insights cluster extensions"
 az k8s-extension create --name "azuremonitor-containers" --cluster-name $connectedClusterName --resource-group $Env:resourceGroup --cluster-type connectedClusters --extension-type Microsoft.AzureMonitor.Containers --configuration-settings logAnalyticsWorkspaceResourceID=$workspaceId
 Write-Host "`n"
+#az k8s-extension delete --name "azuremonitor-containers" --cluster-name $connectedClusterName --resource-group $Env:resourceGroup --cluster-type connectedClusters
+#az k8s-extension delete --name "microsoft.azuredefender.kubernetes" --cluster-name $connectedClusterName --resource-group $Env:resourceGroup --cluster-type connectedClusters
+#az k8s-extension list --cluster-name $connectedClusterName --resource-group $Env:resourceGroup --cluster-type connectedClusters
+
 
 $workspaceId = $(az resource show --resource-group $Env:resourceGroup --name $Env:workspaceName --resource-type "Microsoft.OperationalInsights/workspaces" --query id -o tsv)
 $workspaceKey = $(az monitor log-analytics workspace get-shared-keys --resource-group $Env:resourceGroup --workspace-name $Env:workspaceName --query primarySharedKey -o tsv)
