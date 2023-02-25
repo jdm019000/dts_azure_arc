@@ -192,7 +192,7 @@ resource "aws_subnet" "subnet1" {
 }
 
 data "aws_ami" "Windows_2022" {
-  #most_recent = true
+  most_recent = true
   filter {
     name   = "name"
     values = ["Windows_Server-2022-English-Full-Base-*"]
